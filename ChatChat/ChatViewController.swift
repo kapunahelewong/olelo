@@ -36,7 +36,7 @@ class ChatViewController: JSQMessagesViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    title = "Olelo"
+    title = "Pāleo"
     setupBubbles()
     
     // No avatars

@@ -27,27 +27,32 @@ class LoginViewController: UIViewController {
     
     // MARK: Properties
     var ref: Firebase!
-  
+
   override func viewDidLoad() {
     super.viewDidLoad()
     ref = Firebase(url: "https://mama-olelo.firebaseio.com")
-  }
-
-  @IBAction func loginDidTouch(sender: AnyObject) {
-    ref.authAnonymouslyWithCompletionBlock { (error, authData) in // 1
-        if error != nil { print(error.description); return } // 2
-        self.performSegueWithIdentifier("LoginToChat", sender: nil) // 3
-    }
-
+    self.navigationController?.navigationBarHidden = true
   }
     
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     super.prepareForSegue(segue, sender: sender)
-    let navVc = segue.destinationViewController as! UINavigationController // 1
-    let chatVc = navVc.viewControllers.first as! ChatViewController // 2
-    chatVc.senderId = ref.authData.uid // 3
-    chatVc.senderDisplayName = "" // 4
+    
+        if (segue.identifier == "chatSegue") {
+            print("chatsegue")
+            let navVc = segue.destinationViewController as! UINavigationController
+            let chatVc = navVc.viewControllers.first as! ChatViewController
+            chatVc.senderId = ref.authData.uid
+            chatVc.senderDisplayName = ""
+        }
     }
   
+    
+    @IBAction func chatButton(sender: AnyObject) {
+        ref.authAnonymouslyWithCompletionBlock { (error, authData) in
+        if error != nil { print(error.description); return }
+        self.performSegueWithIdentifier("chatSegue", sender: nil)
+                }
+    }
+    
 }
 
