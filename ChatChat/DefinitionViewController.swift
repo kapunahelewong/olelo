@@ -17,16 +17,19 @@ class DefinitionViewController: UIViewController{
     @IBOutlet weak var translation: UILabel!
     
     
-    var definitions : [String] = Array()
-    var definition : String = ""
-    var wordTest : [String: String] = ["":""]
-    
+//    var definitions : [String] = Array()
+//    var definition : String = ""
+//    var wordTest : [String: String] = ["":""]
+
+    var definition: (String, String)?
 
     
     override func viewDidLoad() {
         print(definition)
         
-        word.text = wordTest.description
+        guard let wordDef = definition else {return}
+        word.text = wordDef.0
+        translation.text = wordDef.1
  
     }
     

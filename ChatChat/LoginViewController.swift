@@ -23,11 +23,21 @@
 import UIKit
 import Firebase
 
+enum Language: Int {
+    case Hawaiian
+    case English
+}
+
 class LoginViewController: UIViewController {
     
     // MARK: Properties
     var ref: Firebase!
+    var selectedLanguage = Language.Hawaiian
 
+    @IBOutlet weak var paleoButton: UIButton!
+    @IBOutlet weak var dictionaryButton: UIButton!
+    @IBOutlet weak var oleloTranslationLabel: UILabel!
+    
   override func viewDidLoad() {
     super.viewDidLoad()
     ref = Firebase(url: "https://mama-olelo.firebaseio.com")
@@ -43,6 +53,10 @@ class LoginViewController: UIViewController {
             let chatVc = navVc.viewControllers.first as! ChatViewController
             chatVc.senderId = ref.authData.uid
             chatVc.senderDisplayName = ""
+        } else if segue.identifier == "dictionarySegue" {
+            let destinationNavVC = segue.destinationViewController as! UINavigationController
+            let destinationVC = destinationNavVC.viewControllers[0] as! DictionaryTableViewController
+            destinationVC.selectedLanguage = self.selectedLanguage
         }
     }
   
@@ -53,6 +67,23 @@ class LoginViewController: UIViewController {
         self.performSegueWithIdentifier("chatSegue", sender: nil)
                 }
     }
+    
+    
+    @IBAction func usFlag(sender: AnyObject) {
+        paleoButton.setTitle("Chat", forState: .Normal)
+        dictionaryButton.setTitle("Dictionary", forState: .Normal)
+        oleloTranslationLabel.text = "(Chat in Hawaiian)"
+        selectedLanguage = Language.English
+        
+    }
+    
+    @IBAction func hawaiianFlag(sender: AnyObject) {
+        paleoButton.setTitle("Pāleo", forState: .Normal)
+        dictionaryButton.setTitle("Puke wehewehe ʻōlelo", forState: .Normal)
+        oleloTranslationLabel.text = ""
+        selectedLanguage = Language.Hawaiian
+    }
+    
     
 }
 
