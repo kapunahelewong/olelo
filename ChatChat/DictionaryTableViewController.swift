@@ -9,13 +9,16 @@
 import Foundation
 import UIKit
 
+
+
 class DictionaryTableViewController: UITableViewController {
     
     @IBOutlet var dictionaryTableView: UITableView!
     
-//    let dictionaryDataSet = [("a", "and, then, of"), ("`a`ala", "sweet fragrance"), ("akā", "but"), ("alanui", "road")]
-//    let dictionaryDataSet2 = [("`ehia", "how many?"), ("`ele`ele", "black"), ("`elemakule", "elder man, old"), ("`eleu", "active, lively, alert")]
-    var valueToPass:String! = "test"
+    let searchController = UISearchController(searchResultsController: nil)
+    var filteredWords = [String : Array<(String, String)>]()
+
+//    var valueToPass:String! = "test"
     var selectedLanguage = Language.Hawaiian
     
     var dictionaryDataSet = [
@@ -23,11 +26,11 @@ class DictionaryTableViewController: UITableViewController {
         "e" : [("`ehia", "how many?"), ("`ele`ele", "black"), ("`elemakule", "elder man, old"), ("`eleu", "active, lively, alert")],
         "i" : [("i", "in, at"), ("ikaika", "strong"), ("iliahi", "sandalwood"), ("imua", "forward, ahead")],
         "o" : [("`o", "of, from"), ("`oia", "he or she (genderless 3rd person pronoun)"), ("`olena", "turmeric"), ("`ōpua", "puffy, billowy clouds")],
-        "u" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
+        "u" : [("ula", "red"), ("ulu", "breadfruit"), ("uwē", "to cry"), ("honua", "earth")],
         "h" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
-        "k" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
+        "k" : [("ka/ke", "the"), ("kai", "sea"), ("kapa", "blanket, mat"), ("keiki", "child")],
         "l" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
-        "m" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
+        "m" : [("mai", "come, don't (when followed by a verb)"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
         "n" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
         "p" : [("paha", "perhaps, maybe"), ("papa kuhikuhi", "main menu"), ("papala", "hat"), ("peku", "to kick"), ("pela", "like that")],
         "w" : [("ha", "breath"), ("ha`awi", "to give"), ("ha`awina", "assignment"), ("honua", "earth")],
@@ -35,18 +38,45 @@ class DictionaryTableViewController: UITableViewController {
         
     ]
     
+//      Search Stuff **********I have no idea what to put here*******************************
+//    func filterContentForSearchText(searchText: String, scope: String = "All") {
+//        for (key, wordArray) in dictionaryDataSet {
+////            filteredWords[key] = wordArray.filter {$0.0.lowercaseString.containsString(searchText)}
+////            print(key)
+//            filteredWords["\(key)"] = wordArray.filter {$0.0.lowercaseString.containsString(searchText)}
+//            print(filteredWords[key])
+//            
+//        }
+////        filteredWords = dictionaryDataSet.filter {$0.0.lowercaseString.containsString(searchText)}
+////            word in
+////            return dictionaryDataSet[""].lowercaseString.containsString(searchText.lowercaseString)
+////        }
+//        
+//        tableView.reloadData()
+//    }
+
     
-//    let wordDictionary: [String: String] = ["word1": "def1", "word2": "def2"]
+    func filterContentForSearchText(searchText: String, scope: String = "All") {
+        
+        let aWords = self.dictionaryDataSet["a"]!
+        filteredWords["a"] = aWords.filter({( word : (String, String)) -> Bool in
+//            let categoryMatch = (scope == "All") || (candy.category == scope)
+            return word.0.lowercaseString.containsString(searchText.lowercaseString)
+        })
+        print(filteredWords)
+        tableView.reloadData()
+    }
+
     
     override func viewDidLoad() {
         dictionaryTableView.dataSource = self
         dictionaryTableView.delegate = self
         
-//        for (key, value) in wordDictionary {
-//            print("\(key) -> \(value)")
-//        }
-//        
-//        print(wordDictionary.values)
+//      Search Stuff
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        definesPresentationContext = true
+        tableView.tableHeaderView = searchController.searchBar
         
     }
     override func viewDidAppear(animated: Bool) {
@@ -55,11 +85,29 @@ class DictionaryTableViewController: UITableViewController {
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 12
+        if searchController.active && searchController.searchBar.text != "" {
+            return filteredWords.keys.count
+            //            word = filteredWords[indexPath.row]
+        } else {
+            return 12
+        }
+        
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
+//        
+        if searchController.active && searchController.searchBar.text != "" {
+            var filteredKeys = Array(filteredWords.keys)
+            
+            return filteredWords["\(filteredKeys[section])"]!.count
+        }
+//        else {
+//            var dataSetKeys = Array(dictionaryDataSet.keys)
+//            print("key: \(dataSetKeys[section]) section: \(section)")
+//
+//            return dictionaryDataSet["\(dataSetKeys[section])"]!.count
+//        }
+
         if section == 0 {
             return dictionaryDataSet["a"]!.count
         } else if section == 1 {
@@ -87,13 +135,31 @@ class DictionaryTableViewController: UITableViewController {
         } else {
             return dictionaryDataSet["`"]!.count
         }
-    }
+        
+        if searchController.active && searchController.searchBar.text != "" {
+            return filteredWords.count
+        }
+        return dictionaryDataSet.count
+        
+    } //end numberOfRowsInSection
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Basic")!
         
+//        Search stuff
+        let word: Int
+        var wordDict = [String : Array<(String, String)>]()
+
+        if searchController.active && searchController.searchBar.text != "" {
+            wordDict = filteredWords
+
+//            word = filteredWords[indexPath.row]
+        } else {
+            wordDict = dictionaryDataSet
+        }
+        
         if indexPath.section == 0 {
-            let wordTuple = dictionaryDataSet["a"]![indexPath.row] as (String, String)
+            let wordTuple = wordDict["a"]![indexPath.row] as (String, String)
             var word: String
             switch selectedLanguage {
             case .English:
@@ -250,7 +316,7 @@ class DictionaryTableViewController: UITableViewController {
         // Get Cell Label
         let indexPath = tableView.indexPathForSelectedRow!;
         let currentCell = tableView.cellForRowAtIndexPath(indexPath) as UITableViewCell!;
-        valueToPass = currentCell.textLabel!.text
+//        valueToPass = currentCell.textLabel!.text
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -300,5 +366,18 @@ class DictionaryTableViewController: UITableViewController {
 //                }
 //            }
         }
+    }
+}
+
+extension DictionaryTableViewController: UISearchResultsUpdating {
+    func updateSearchResultsForSearchController(searchController: UISearchController) {
+        filterContentForSearchText(searchController.searchBar.text!)
+    }
+}
+
+extension DictionaryTableViewController: UISearchBarDelegate {
+    // MARK: - UISearchBar Delegate
+    func searchBar(searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
+        filterContentForSearchText(searchBar.text!, scope: searchBar.scopeButtonTitles![selectedScope])
     }
 }
